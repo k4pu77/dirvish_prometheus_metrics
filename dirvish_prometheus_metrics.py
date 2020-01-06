@@ -6,8 +6,6 @@ import os
 import re
 import sys
 from datetime import datetime
-from pprint import pprint
-
 
 class Metric:
     def __init__(self, name, description, value=0, labels={}):
@@ -35,12 +33,11 @@ class Metric:
     def __str__(self):
         """ Template out prometheus metrics """
 
-        lables = ','.join(f'{k}="{v}"' for k, v in self.labels.items())
-
+        labels = ','.join(f'{k}="{v}"' for k, v in self.labels.items())
         return (
             f"# HELP {self.name} {self.description}.\n"
             f"# TYPE {self.name} gauge\n"
-            f"{self.name}{labels} {self.value}\n"
+            f"{self.name}{{{labels}}} {self.value}\n"
         )
 
 
@@ -54,6 +51,7 @@ def parse_arguments():
         "--outfile",
         help="Path to output file",
         action="store",
+        required=True,
     )
     parser.add_argument(
         "-j",
@@ -61,6 +59,7 @@ def parse_arguments():
         help='Jobname (e.g "dirvish")',
         action="store",
         default="dirvish",
+        required=False,
     )
 
     return parser.parse_args()
@@ -300,9 +299,6 @@ if __name__ == "__main__":
         "DIRVISH_STATUS": os.getenv("DIRVISH_STATUS"),
     }
 
-    print("Printing Dirvish environment variables:")
-    pprint(envvars)
-
     # Path to dirvish vault instance
     instance = "/" + envvars["DIRVISH_DEST"].strip("/tree")
 
@@ -323,10 +319,6 @@ if __name__ == "__main__":
     metrics.update(extract_dirvish_status(envvars["DIRVISH_STATUS"]))
     metrics.update(extract_client_scripts(summary_file))
 
-    # Set labels all metrics
-    for k in metrics:
-        metrics[k].labels = labels
-
     # Check if dirvish pre-client script failed and if so abort the collection
     # of further metrics
     if (
@@ -335,8 +327,10 @@ if __name__ == "__main__":
     ):
         metrics.update(extract_rsync_metrics(logfile))
         metrics.update(extract_duration(summary_file))
+    
+    # Set labels all metrics
+    for k in metrics:
+        metrics[k].labels = labels
 
     # Print metrics to the summary file
-    pprint(metrics.values())
-
     write_to_file(args.outfile, metrics)

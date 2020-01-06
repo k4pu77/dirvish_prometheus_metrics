@@ -1,6 +1,5 @@
 Dirvish Prometheus Metrics
 ==========================
-[![Travis](https://img.shields.io/travis/winpat/dirvish_prometheus_metrics.svg?style=flat-square)](https://travis-ci.org/winpat/dirvish_prometheus_metrics)
 [![License](https://img.shields.io/github/license/winpat/dirvish_prometheus_metrics.svg?style=flat-square)](LICENSE)
 
 A [Dirvish](http://dirvish.org) post exec script that extracts various [Prometheus](https://prometheus.io) metrics and writes them to a file.
