@@ -206,7 +206,8 @@ def extract_rsync_metrics(logfile):
     for i, (metric, pattern) in enumerate(zip(metrics.values(), patterns)):
         # Extract metrics from rsync stats
         match = re.match(pattern, rsync_stats[i])
-        metric.value = match.group(1)
+        if match:
+            metric.value = match.group(1)
 
     return metrics
 
@@ -322,7 +323,7 @@ if __name__ == "__main__":
     # Check if dirvish pre-client script failed and if so abort the collection
     # of further metrics
     if (
-        metrics["dirvish_status"].value == 0
+        metrics["dirvish_status"].value in [0, 1]
         or metrics["dirvish_pre_client_return_code"].value != 0
     ):
         metrics.update(extract_rsync_metrics(logfile))
